@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>index 2</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body
+    class="flex items-center justify-center min-h-screen flex-col gap-10 pb-20"
+  >
+    <div x-data="{ message: '' }">
+      <input
+        type="text"
+        x-model="message"
+        class="border border-green-100 p-3"
+      />
+      <br />
+      <button
+        @click="message = 'changed'"
+        class="text-yellow-300 w-30 block bg-yellow-500 my-5 p-3"
+      >
+        change input value
+      </button>
+      <br />
+      <span x-text="message"></span>
+    </div>
+
+    <div x-data="{username : ''}">
+      <input
+        type="text"
+        x-model.change="username"
+        class="border border-gray-600"
+        :class="{ 'border-red-500!':  username.length > 20, 'border-green-500!':  username.length < 20 && username.length !== 0 }"
+      />
+      <br />
+      <span x-show="username.length > 20" class="text-red-500"
+        >The username is too long.</span
+      >
+      <span x-text="username"></span>
+    </div>
+
+    <div x-data="{search : '', message: ''}">
+      <!-- Sync on blur OR enter -->
+      <input
+        type="text"
+        x-model.blur.enter="search"
+        placeholder="Press Enter or click away"
+      />
+      <span x-text="search"></span>
+
+      <!-- Sync on change, blur, OR enter -->
+      <input type="text" x-model.change.blur.enter="message" />
+      <span x-text="message"></span>
+    </div>
+
+    <div x-data="{age : 0, price: 100, quantity : 1}">
+      <!-- <input type="text" x-model.number="age" /> -->
+      <!-- <span x-text="typeof age"></span> -->
+      <input type="text" x-model.number="price" />
+      <input type="text" x-model.number="quantity" />
+      <span x-text="price"></span>
+      <span x-text="price * quantity"></span>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -7,9 +7,159 @@
     <title>panel</title>
     <link href="./src/style.css" rel="stylesheet" />
   </head>
-  <body>
-    <p class="bg-amber-300" x-data x-text="'test'"></p>
+  <body class="flex items-center justify-center min-h-screen flex-col gap-10">
+    <!-- x-text / x-data -->
+    <!-- <p class="bg-amber-300" x-data x-text="'test'"></p> -->
 
+    <!-- x-init -->
+    <!-- <div x-init="alert('I\'m being initialized!')"></div> -->
+    <!-- <div x-init="$nextTick(() => { alert('I\'m being initialized!') })"></div> -->
+
+    <!-- x-show -->
+    <!-- <div x-data="{ open: false }">
+      <button x-on:click="open = ! open">Toggle Dropdown</button>
+
+      <div x-show="open" x-transition>Dropdown Contents...</div>
+    </div> -->
+
+    <div x-data="{placeHolderText : 'متن خود را بنویسید', value : 'رضا'}">
+      <input
+        type="text"
+        x-bind:placeholder="placeHolderText"
+        x-bind:value="value"
+        class="border"
+      />
+      <input
+        type="text"
+        :placeholder="placeHolderText"
+        :value="value"
+        class="border"
+      />
+    </div>
+
+    <div x-data="{ open: false }">
+      <button x-on:click="open = ! open">Toggle Dropdown</button>
+
+      <!-- <div :class="open ? '' : 'hidden'">Dropdown Contents...</div> -->
+      <!-- <div :class="open || 'hidden'">Dropdown Contents...</div> -->
+      <!-- <div :class="{hidden : !open}">Dropdown Contents...</div> -->
+      <!-- <div class="hidden" :class="{ 'hidden':  !open }">test dropdown</div> -->
+      <div class="opacity-50" :class="!open && 'hidden'">drop 3</div>
+
+      <!-- <div x-bind:style="{color : 'red', backgroundColor: 'green'}">test</div> -->
+      <!-- <div x-bind:style="open ? {color : 'red', backgroundColor: 'green'} : {display : 'none'}">test</div> -->
+      <div
+        style="color: red; background-color: green"
+        x-bind:style="open ? {display: 'block'} : {display : 'none'}"
+      >
+        test
+      </div>
+    </div>
+
+    <div x-data="{ styles: { color: 'red', display: 'flex' }}">
+      <div :style="styles">gdfgfdg</div>
+    </div>
+
+    <button x-data x-on:mouseover="console.log('Hello')">Say Hi</button>
+
+    <button x-data @click="alert('Hello World!')">Say Hi</button>
+    <button x-data @mouseover="alert('Hello World!')">Say Hi 2</button>
+
+    <div x-data="{ styles: { color: 'red', display: 'flex' }}">
+      <div :style="styles">gdfgfdg</div>
+      <button
+        @mouseenter="() => {$data.styles.color = 'green';$data.styles.backgroundColor = 'yellow';}"
+        @mouseleave="() => {$data.styles.color = 'red';$data.styles.backgroundColor = 'unset';}"
+      >
+        Say Hi 3
+      </button>
+    </div>
+
+    <button
+      x-data
+      @click="alert($event.target.getAttribute('message'))"
+      message="Hello World"
+    >
+      Say Hi
+    </button>
+
+    <button x-data @click="handleClick" message="Hello log">Say log</button>
+
+    <button
+      x-data
+      @click="(e) =>{
+        console.log(e);
+        console.log(e.target);
+        console.log(e.target.getAttribute('message'));
+      }"
+      message="Hello log 2"
+    >
+      Say log 2
+    </button>
+
+    <input
+      x-data
+      type="text"
+      @keyup.shift.enter="alert('Submitted!')"
+      class="border border-rose-500 p-3"
+    />
+    <input
+      x-data
+      type="text"
+      @keydown.shift.enter="alert('Submitted!')"
+      class="border border-rose-500 p-3"
+    />
+
+    <button x-data @dblclick="alert('test')">test</button>
+
+    <div x-data @foo="alert('Button Was Clicked!')">
+      <button
+        @click="$event.target.dispatchEvent(new CustomEvent('foo', { bubbles: true }))"
+      >
+        test
+      </button>
+    </div>
+
+    <div x-data @bar="alert('Button Was Clicked!')">
+      <button @click="$dispatch('bar')">test</button>
+    </div>
+
+    <div x-data="{ open: false }">
+      <button @click="open = ! open">Toggle</button>
+
+      <div x-show="open" @click.outside="open = false">Contents...</div>
+    </div>
+
+    <button x-data @click.once="console.log('I will only log once')">
+      log
+    </button>
+
+    <input
+      x-data
+      @input.debounce.500="console.log($event.target.value)"
+      class="border border-pink-400"
+    />
+    <input
+      x-data
+      @input.throttle.500="console.log($event.target.value)"
+      class="border border-green-400"
+    />
+
+    <div x-data="{ username: 'calebporzio' }">
+      Username: <strong x-text="username"></strong>
+    </div>
+
+    <div x-data="{ username: '<strong>calebporzio</strong>' }">
+      Username: <span x-html="username"></span>
+    </div>
+
+    <script>
+      function handleClick(e) {
+        console.log(e);
+        console.log(e.target);
+        console.log(e.target.getAttribute("message"));
+      }
+    </script>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>
