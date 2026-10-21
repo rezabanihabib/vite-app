@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fa-IR" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vite</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body
+    class="flex items-center justify-center min-h-screen flex-col gap-10 pb-20"
+  >
+    <div x-data="{ open: false }">
+      <button @click="open = ! open">Toggle</button>
+
+      <div
+        x-cloak
+        x-show="open"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+      >
+        Hello 👋
+      </div>
+    </div>
+
+    <div x-data="{ label: 'Hello' }" x-effect="console.log(label)">
+      <button @click="label += ' World!'">Change Message</button>
+    </div>
+
+    <div x-data="{ label: 'From Alpine' }">
+      <div x-ignore>
+        <span x-text="label"></span>
+      </div>
+    </div>
+
+    <div x-data>
+      <button @click="$refs.text.remove()">Remove Text</button>
+      <br />
+      <span x-ref="text">Hello 👋</span>
+    </div>
+
+    <div x-data="{ open: false }">
+      <button @click="open = ! open">Toggle Modal</button>
+
+      <template x-teleport="body">
+        <div x-show="open">Modal contents...</div>
+      </template>
+    </div>
+
+    <div>Some other content placed AFTER the modal markup.</div>
+
+    <div x-data="{ open: false }">
+      <button @click="open = ! open">Toggle Modal</button>
+
+      <template x-teleport="body" @click="open = false">
+        <div x-show="open">Modal contents... (click to close)</div>
+      </template>
+    </div>
+
+    <div>Some other content placed AFTER the modal markup.</div>
+
+    <div x-data="{open : true}">
+      <button @click="open= !open">toggle</button>
+      <template x-if="open">
+        <div>Contents...</div>
+      </template>
+    </div>
+
+    <div x-id="['text-input']">
+      <label :for="$id('text-input')">Username</label>
+      <!-- for="text-input-1" -->
+
+      <input type="text" :id="$id('text-input')" />
+      <!-- id="text-input-1" -->
+    </div>
+
+    <div x-id="['text-input']">
+      <label :for="$id('text-input')">Username</label>
+      <!-- for="text-input-2" -->
+
+      <input type="text" :id="$id('text-input')" />
+      <!-- id="text-input-2" -->
+    </div>
+
+    <button x-data @click="$el.innerHTML = 'Hello World!'">sajjad</button>
+
+    <button x-data @click="$store.darkMode.toggle()">Toggle Dark Mode</button>
+
+    <div x-data :class="$store.darkMode.on && 'bg-black'">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Nesciunt autem
+      accusamus, blanditiis eum at ex sed voluptas deleniti vel in quae adipisci
+      tempore. Natus, tempora praesentium dolorum saepe veritatis sint.
+    </div>
+
+    <div
+      x-data="{ open: false }"
+      x-init="$watch('open', value => console.log(value))"
+    >
+      <button @click="open = ! open">Toggle Open</button>
+    </div>
+
+    <div
+      x-data="{text : 'reza', prevValue: ''}"
+      x-init="$watch('text', (value,oldValue)=> prevValue = oldValue)"
+    >
+      <input type="text" x-model="text" />
+      <button @click="text = 'sajjad'">clear</button>
+      <button @click="text = prevValue">prev</button>
+    </div>
+
+    <div x-data @reza="alert($event.detail.message)">
+      <button @click="$dispatch('reza', { message: 'Hello sajjad!' })">
+        Notify
+      </button>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

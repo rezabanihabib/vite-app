@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تقویم شمسی</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <style>
+      body {
+        font-family: Tahoma, sans-serif;
+      }
+
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
+    <div
+      x-data="persianCalendar()"
+      x-init="init()"
+      x-cloak
+      class="w-full max-w-md rounded-2xl bg-white p-5 shadow-lg"
+    >
+      <!-- Input -->
+      <label class="mb-2 block text-sm font-medium text-gray-700">
+        تاریخ انتخاب‌شده
+      </label>
+
+      <input
+        type="text"
+        readonly
+        :value="selectedDate ? formatDate(selectedDate) : ''"
+        placeholder="یک تاریخ انتخاب کنید"
+        class="mb-5 w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-500"
+      />
+
+      <!-- Header -->
+      <div class="mb-5 flex items-center justify-between">
+        <button
+          type="button"
+          @click="changeMonth(-1)"
+          class="rounded-lg p-2 hover:bg-gray-100"
+          aria-label="ماه قبل"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+
+        <div class="text-center">
+          <h2
+            class="text-lg font-bold text-gray-800"
+            x-text="monthName + ' ' + toPersianDigits(year)"
+          ></h2>
+
+          <button
+            type="button"
+            @click="goToday()"
+            class="mt-1 text-xs text-blue-600 hover:underline"
+          >
+            برو به امروز
+          </button>
+        </div>
+
+        <button
+          type="button"
+          @click="changeMonth(1)"
+          class="rounded-lg p-2 hover:bg-gray-100"
+          aria-label="ماه بعد"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Weekdays -->
+      <div
+        class="mb-2 grid grid-cols-7 text-center text-xs font-bold text-gray-500"
+      >
+        <template x-for="day in weekdays" :key="day">
+          <div class="py-2" x-text="day"></div>
+        </template>
+      </div>
+
+      <!-- Calendar days -->
+      <div class="grid grid-cols-7 gap-y-1">
+        <template x-for="day in days" :key="day.key">
+          <button
+            type="button"
+            @click="selectDate(day)"
+            :disabled="!day.date"
+            :class="{
+            'text-gray-300': !day.currentMonth,
+            'text-gray-800 hover:bg-blue-50': day.currentMonth && !day.isSelected,
+            'bg-blue-600 text-white hover:bg-blue-700': day.isSelected,
+            'ring-1 ring-blue-500': day.isToday && !day.isSelected
+          }"
+            class="mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm transition"
+            :aria-label="day.date ? formatDate(day.date) : ''"
+            :aria-pressed="day.isSelected"
+            x-text="day.number ? toPersianDigits(day.number) : ''"
+          ></button>
+        </template>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="mt-5 border-t border-gray-100 pt-4 text-center text-sm text-gray-600"
+      >
+        <span>تاریخ امروز:</span>
+        <span class="font-medium" x-text="formatDate(today)"></span>
+      </div>
+    </div>
+
+    <script>
+      function persianCalendar() {
+        const numericFormatter = new Intl.DateTimeFormat(
+          "en-US-u-ca-persian-nu-latn",
+          {
+            timeZone: "UTC",
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+          },
+        );
+
+        const monthFormatter = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+          timeZone: "UTC",
+          month: "long",
+        });
+
+        const dateFormatter = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+          timeZone: "UTC",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+
+        function jalaliParts(date) {
+          const parts = numericFormatter.formatToParts(date);
+          const get = (type) =>
+            Number(parts.find((part) => part.type === type).value);
+
+          return {
+            year: get("year"),
+            month: get("month"),
+            day: get("day"),
+          };
+        }
+
+        function dateKey(date) {
+          return date
+            ? `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`
+            : "";
+        }
+
+        function findGregorianDate(year, month, day = 1) {
+          // سال شمسی معمولاً با سال میلادیِ year + 621 هم‌پوشانی دارد.
+          const start = Date.UTC(year + 621, 0, 1) - 120 * 24 * 60 * 60 * 1000;
+
+          const end = start + 500 * 24 * 60 * 60 * 1000;
+          const step = 24 * 60 * 60 * 1000;
+
+          for (let timestamp = start; timestamp <= end; timestamp += step) {
+            const date = new Date(timestamp);
+            const p = jalaliParts(date);
+
+            if (p.year === year && p.month === month && p.day === day) {
+              return date;
+            }
+          }
+
+          throw new Error("تاریخ موردنظر پیدا نشد.");
+        }
+
+        function monthLength(year, month) {
+          const first = findGregorianDate(year, month, 1);
+          const next =
+            month === 12
+              ? findGregorianDate(year + 1, 1, 1)
+              : findGregorianDate(year, month + 1, 1);
+
+          return Math.round((next - first) / 86400000);
+        }
+
+        return {
+          year: 0,
+          month: 0,
+          monthName: "",
+          today: null,
+          selectedDate: null,
+          days: [],
+
+          weekdays: [
+            "شنبه",
+            "یکشنبه",
+            "دوشنبه",
+            "سه‌شنبه",
+            "چهارشنبه",
+            "پنجشنبه",
+            "جمعه",
+          ],
+
+          init() {
+            const now = new Date();
+
+            // استفاده از تاریخ محلی کاربر، بدون وابستگی به ساعت UTC
+            this.today = new Date(
+              Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+            );
+
+            const p = jalaliParts(this.today);
+
+            this.year = p.year;
+            this.month = p.month;
+            this.selectedDate = null;
+
+            this.renderCalendar();
+          },
+
+          renderCalendar() {
+            const first = findGregorianDate(this.year, this.month, 1);
+            const offset = (first.getUTCDay() + 1) % 7;
+            const count = monthLength(this.year, this.month);
+
+            this.monthName = monthFormatter.format(first);
+            this.days = [];
+
+            const todayKey = dateKey(this.today);
+            const selectedKey = dateKey(this.selectedDate);
+
+            // روزهای ماه قبل
+            for (let i = 0; i < offset; i++) {
+              const date = new Date(first.getTime() - (offset - i) * 86400000);
+              const p = jalaliParts(date);
+
+              this.days.push({
+                key: dateKey(date),
+                date,
+                number: p.day,
+                currentMonth: false,
+                isToday: dateKey(date) === todayKey,
+                isSelected: dateKey(date) === selectedKey,
+              });
+            }
+
+            // روزهای ماه جاری
+            for (let i = 1; i <= count; i++) {
+              const date = new Date(first.getTime() + (i - 1) * 86400000);
+
+              this.days.push({
+                key: dateKey(date),
+                date,
+                number: i,
+                currentMonth: true,
+                isToday: dateKey(date) === todayKey,
+                isSelected: dateKey(date) === selectedKey,
+              });
+            }
+
+            // روزهای ماه بعد برای تکمیل ردیف آخر
+            let nextDate = new Date(first.getTime() + count * 86400000);
+
+            while (this.days.length < 42) {
+              const p = jalaliParts(nextDate);
+
+              this.days.push({
+                key: dateKey(nextDate),
+                date: nextDate,
+                number: p.day,
+                currentMonth: false,
+                isToday: dateKey(nextDate) === todayKey,
+                isSelected: dateKey(nextDate) === selectedKey,
+              });
+
+              nextDate = new Date(nextDate.getTime() + 86400000);
+            }
+          },
+
+          changeMonth(amount) {
+            let nextMonth = this.month + amount;
+            let nextYear = this.year;
+
+            if (nextMonth > 12) {
+              nextMonth = 1;
+              nextYear++;
+            } else if (nextMonth < 1) {
+              nextMonth = 12;
+              nextYear--;
+            }
+
+            this.month = nextMonth;
+            this.year = nextYear;
+
+            this.renderCalendar();
+          },
+
+          selectDate(day) {
+            if (!day.date) return;
+
+            this.selectedDate = day.date;
+            this.renderCalendar();
+          },
+
+          goToday() {
+            const p = jalaliParts(this.today);
+
+            this.year = p.year;
+            this.month = p.month;
+            this.selectedDate = this.today;
+
+            this.renderCalendar();
+          },
+
+          formatDate(date) {
+            return date ? dateFormatter.format(date) : "";
+          },
+
+          toPersianDigits(value) {
+            return String(value).replace(
+              /\d/g,
+              (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)],
+            );
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
